@@ -15,14 +15,14 @@ type (
 		Remove(key interface{})
 	}
 
-	KVMemoryStoreValue struct {
-		inner interface{}
-		read  chan struct{}
-	}
-
 	KVMemoryStore struct {
 		ttl   time.Duration
 		store *sync.Map
+	}
+
+	kvStoreValue struct {
+		inner interface{}
+		read  chan struct{}
 	}
 )
 
@@ -44,13 +44,13 @@ func (s *KVMemoryStore) Get(key interface{}) (interface{}, bool) {
 	}
 
 	s.Remove(key)
-	value := storeValue.(*KVMemoryStoreValue)
+	value := storeValue.(*kvStoreValue)
 	value.read <- struct{}{}
 	return value.inner, true
 }
 
 func (s *KVMemoryStore) Put(key, value interface{}) {
-	storeValue := &KVMemoryStoreValue{
+	storeValue := &kvStoreValue{
 		inner: value,
 		read:  make(chan struct{}),
 	}
